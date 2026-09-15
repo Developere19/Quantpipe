@@ -16,10 +16,32 @@ def fetch_market_data(symbol: str) -> pd.DataFrame:
 
     time_series = data["Time Series (Daily)"]
     df = pd.DataFrame.from_dict(time_series, orient="index")
+
+    df = df.rename(columns={
+    "1. open": "open",
+    "2. high": "high",
+    "3. low": "low",
+    "4. close": "close",
+    "5. volume": "volume"
+    })
+
+    df.index = pd.to_datetime(df.index)
+    df.index.name = "date"
+
+    df = df.astype({
+    "open": float,
+    "high": float,
+    "low": float,
+    "close": float,
+    "volume": int
+    })
+
     return df
 
 if __name__ == "__main__":
     data = fetch_market_data("IBM")
-    print(data)
+    print(data.head())
+    print()
+    print(data.dtypes)
 
 
