@@ -1,5 +1,11 @@
-import requests
+import os
+
 import pandas as pd
+import requests
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def fetch_market_data(symbol: str) -> pd.DataFrame:
     """
@@ -9,10 +15,15 @@ def fetch_market_data(symbol: str) -> pd.DataFrame:
 
     url = "https://www.alphavantage.co/query"
 
+    api_key = os.getenv("ALPHA_VANTAGE_API_KEY")
+
+    if not api_key:
+        raise ValueError("ALPHA_VANTAGE_API_KEY is not configured.")
+
     params = {
         "function": "TIME_SERIES_DAILY",
         "symbol": symbol,
-        "apikey": "demo" 
+        "apikey": api_key 
     }
 
     response = requests.get(url, params=params, timeout=10)
