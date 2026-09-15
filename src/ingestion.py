@@ -2,6 +2,11 @@ import requests
 import pandas as pd
 
 def fetch_market_data(symbol: str) -> pd.DataFrame:
+    """
+    Fetch daily market data for a stock symbol and return it
+    as a standardized Pandas DataFrame.
+    """
+
     url = "https://www.alphavantage.co/query"
 
     params = {
@@ -14,7 +19,14 @@ def fetch_market_data(symbol: str) -> pd.DataFrame:
     response.raise_for_status()
     data = response.json()
 
+    if "Time Series (Daily)" not in data:
+        raise ValueError(
+            f"Market data not found for symbol '{symbol}'. "
+            f"API response: {data}"
+        )
+
     time_series = data["Time Series (Daily)"]
+
     df = pd.DataFrame.from_dict(time_series, orient="index")
 
     df = df.rename(columns={
@@ -41,7 +53,6 @@ def fetch_market_data(symbol: str) -> pd.DataFrame:
 if __name__ == "__main__":
     data = fetch_market_data("IBM")
     print(data.head())
-    print()
-    print(data.dtypes)
+    
 
 
