@@ -1,3 +1,5 @@
+import argparse
+
 from src.ingestion import fetch_market_data
 from src.validation import validate_market_data
 from src.anomaly_detection import detect_anomalies
@@ -35,4 +37,15 @@ def run_pipeline(symbol: str) -> None:
 
 
 if __name__ == "__main__":
-    run_pipeline("AAPL")
+    parser = argparse.ArgumentParser(
+        description="Run the QuantPipe market data pipeline."
+    )
+
+    parser.add_argument(
+        "symbol",
+        help="Stock symbol to process, for example AAPL or IBM."
+    )
+
+    args = parser.parse_args()
+
+    run_pipeline(args.symbol.upper())
