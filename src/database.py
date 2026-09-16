@@ -56,6 +56,7 @@ def insert_market_data(
 ) -> None:
     """
     Insert processed market data into the PostgreSQL market_data table.
+    Roll back the transaction if a database operation fails.
     """
     connection = get_database_connection()
     cursor = connection.cursor()
@@ -77,31 +78,37 @@ def insert_market_data(
         ON CONFLICT (symbol, date) DO NOTHING;
     """
 
-    for date, row in df.iterrows():
-        cursor.execute(
-            insert_query,
-            (
-                symbol,
-                date.date(),
-                float(row["open"]),
-                float(row["high"]),
-                float(row["low"]),
-                float(row["close"]),
-                int(row["volume"]),
+    try:
+        for date, row in df.iterrows():
+            cursor.execute(
+                insert_query,
                 (
-                    None
-                    if row["daily_return"] != row["daily_return"]
-                    else float(row["daily_return"])
-                ),
-                bool(row["price_anomaly"]),
-                bool(row["volume_anomaly"]),
+                    symbol,
+                    date.date(),
+                    float(row["open"]),
+                    float(row["high"]),
+                    float(row["low"]),
+                    float(row["close"]),
+                    int(row["volume"]),
+                    (
+                        None
+                        if row["daily_return"] != row["daily_return"]
+                        else float(row["daily_return"])
+                    ),
+                    bool(row["price_anomaly"]),
+                    bool(row["volume_anomaly"]),
+                )
             )
-        )
 
-    connection.commit()
+        connection.commit()
 
-    cursor.close()
-    connection.close()
+    except Exception:
+        connection.rollback()
+        raise
+
+    finally:
+        cursor.close()
+        connection.close()
 
 if __name__ == "__main__":
     create_market_data_table()
