@@ -1,7 +1,5 @@
 @echo off
 
-cd /d C:\Users\hamze\projects\Quantpipe
+cd /d "%~dp0"
 
-call .venv\Scripts\activate.bat
-
-python -m src.pipeline AAPL
+.venv\Scripts\python.exe -m src.pipeline AAPL
