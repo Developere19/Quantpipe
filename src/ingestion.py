@@ -1,4 +1,5 @@
 import os
+import time
 
 import pandas as pd
 import requests
@@ -6,6 +7,33 @@ import requests
 from dotenv import load_dotenv
 
 load_dotenv()
+
+def fetch_with_retry(
+    url: str,
+    params: dict,
+    max_retries: int = 3,
+    delay: float = 1.0
+):
+    """
+    Send an HTTP GET request and retry temporary network failures.
+    """
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = requests.get(
+                url,
+                params=params,
+                timeout=10
+            )
+
+            response.raise_for_status()
+
+            return response
+
+        except requests.RequestException:
+            if attempt == max_retries:
+                raise
+
+            time.sleep(delay)
 
 def fetch_market_data(symbol: str) -> pd.DataFrame:
     """
@@ -26,8 +54,11 @@ def fetch_market_data(symbol: str) -> pd.DataFrame:
         "apikey": api_key 
     }
 
-    response = requests.get(url, params=params, timeout=10)
-    response.raise_for_status()
+    response = fetch_with_retry(
+    url,
+    params
+    )
+
     data = response.json()
 
     if "Time Series (Daily)" not in data:

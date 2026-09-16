@@ -1,4 +1,5 @@
 import pytest
+import requests
 from unittest.mock import Mock, patch
 
 from src.ingestion import fetch_market_data
@@ -54,3 +55,39 @@ def test_fetch_market_data_handles_network_failure(mock_get):
 
     with pytest.raises(ConnectionError, match="Network connection failed"):
         fetch_market_data("AAPL")
+
+
+@patch("src.ingestion.time.sleep")
+@patch("src.ingestion.requests.get")
+def test_fetch_market_data_retries_after_network_failure(
+    mock_get,
+    mock_sleep
+):
+    """
+    Test that ingestion retries after a temporary network failure.
+    """
+    successful_response = Mock()
+    successful_response.raise_for_status.return_value = None
+    successful_response.json.return_value = {
+        "Time Series (Daily)": {
+            "2026-09-15": {
+                "1. open": "100.00",
+                "2. high": "105.00",
+                "3. low": "98.00",
+                "4. close": "103.00",
+                "5. volume": "1000000"
+            }
+        }
+    }
+
+    mock_get.side_effect = [
+        requests.ConnectionError("Temporary network failure"),
+        successful_response
+    ]
+
+    result = fetch_market_data("AAPL")
+
+    assert mock_get.call_count == 2
+    mock_sleep.assert_called_once_with(1.0)
+    assert len(result) == 1
+    assert result.iloc[0]["close"] == 103.0
