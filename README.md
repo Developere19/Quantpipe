@@ -164,6 +164,50 @@ Logs are also persisted to:
 logs/quantpipe.log
 ```
 
+## Viewing Stored Market Data
+
+After a successful pipeline run, processed market data is stored in the PostgreSQL `market_data` table.
+
+The table contains:
+
+- `symbol` — stock ticker, such as AAPL
+- `date` — trading date
+- `open` — opening price
+- `high` — highest price during the trading day
+- `low` — lowest price during the trading day
+- `close` — closing price
+- `volume` — number of shares traded
+- `daily_return` — percentage change in closing price
+- `price_anomaly` — indicates whether an unusual price movement was detected
+- `volume_anomaly` — indicates whether unusual trading volume was detected
+
+### Viewing Data with pgAdmin
+
+The stored data can be viewed using pgAdmin:
+
+1. Open **pgAdmin 4**
+2. Connect to the PostgreSQL server
+3. Navigate to:
+
+   `Databases → quantpipe → Schemas → public → Tables → market_data`
+
+4. Right-click `market_data`
+5. Select **View/Edit Data → All Rows**
+
+This displays the market observations collected and processed by QuantPipe.
+
+### Viewing Data with SQL
+
+The latest observations for a stock can also be retrieved directly with SQL:
+
+```sql
+SELECT date, open, high, low, close, volume,
+       daily_return, price_anomaly, volume_anomaly
+FROM market_data
+WHERE symbol = 'AAPL'
+ORDER BY date DESC
+LIMIT 10;
+
 ## Data Validation
 
 Before observations are stored, QuantPipe checks the incoming market data for:
