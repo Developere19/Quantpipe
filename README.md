@@ -273,6 +273,11 @@ The current test suite contains 23 automated tests covering:
 
 External dependencies are mocked where appropriate so the unit tests do not depend on live API or database responses.
 
+GitHub Actions runs this suite on every push and pull request using Python 3.12.
+The workflow installs `requirements.txt` and supplies a dummy `ALPHA_VANTAGE_API_KEY`
+to satisfy the ingestion configuration check. No live API key, GitHub secrets, or
+PostgreSQL service is required for these mocked tests.
+
 ## Automated Scheduling
 
 The repository includes `run_quantpipe.bat` for automated execution on Windows.
@@ -314,7 +319,6 @@ Possible extensions include:
 * Linux-based deployment
 * Apache Airflow orchestration
 * Docker containerisation
-* Continuous integration using GitHub Actions
 * Additional monitoring and pipeline health metrics
 
 ## What This Project Demonstrates
